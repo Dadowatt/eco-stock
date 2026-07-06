@@ -95,9 +95,9 @@ Format :
 Authorization: Bearer <access_token>
 
 ## Technologies utilisées
-Python
-Django
-Django REST Framework
-Simple JWT
-SQLite (ou autre base configurée)
-```
+- Python
+- Django
+- Django REST Framework
+- Simple JWT
+- SQLite (ou autre base configurée)
+
