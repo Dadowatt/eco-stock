@@ -7,11 +7,12 @@ from rest_framework.viewsets import ModelViewSet
 
 from .models import Product, Warehouse
 from .serializers import ProductSerializer, WarehouseSerializer
-
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 class WarehouseViewSet(ModelViewSet):
     queryset = Warehouse.objects.all()
     serializer_class = WarehouseSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     @action(detail=True, methods=["get"])
     def audit(self, request, pk=None):
@@ -30,6 +31,7 @@ class WarehouseViewSet(ModelViewSet):
 class ProductViewSet(ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     @action(detail=True, methods=["post"])
     def move(self, request, pk=None):

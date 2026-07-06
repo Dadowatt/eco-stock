@@ -113,6 +113,16 @@ USE_I18N = True
 USE_TZ = True
 
 
+
+# Configuration de l'authentification JWT pour l'API.
+# Configure l'API pour authentifier les utilisateurs avec des JWT.
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+}
+
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
