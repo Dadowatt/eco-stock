@@ -13,6 +13,19 @@ class WarehouseViewSet(ModelViewSet):
     queryset = Warehouse.objects.all()
     serializer_class = WarehouseSerializer
 
+    @action(detail=True, methods=["get"])
+    def audit(self, request, pk=None):
+        warehouse = self.get_object()
+        total_products = warehouse.products.count()
+
+        return Response(
+            {
+                "warehouse": warehouse.name,
+                "total_products": total_products,
+            },
+            status=status.HTTP_200_OK,
+        )
+
 
 class ProductViewSet(ModelViewSet):
     queryset = Product.objects.all()
