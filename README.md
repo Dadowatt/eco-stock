@@ -101,3 +101,12 @@ Authorization: Bearer <access_token>
 - Simple JWT
 - SQLite (ou autre base configurée)
 
+
+## Optimisations apportées
+
+En complément des fonctionnalités demandées dans le brief, plusieurs bonnes pratiques ont été mises en place :
+
+- Utilisation de `select_related("warehouse")` afin d'optimiser les requêtes SQL lors de la récupération des produits.
+- Utilisation de serializers imbriqués (Nested Serializers) pour retourner les informations complètes de l'entrepôt.
+- Séparation des champs de lecture (`warehouse`) et d'écriture (`warehouse_id`) pour une API plus claire et plus simple à consommer.
+- Protection des routes sensibles grâce aux permissions `IsAuthenticatedOrReadOnly`.
