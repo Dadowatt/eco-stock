@@ -36,9 +36,10 @@ Sous Windows :
 pip install -r requirements.txt
 
 ### 5. Appliquer les migrations
+```bash
 python manage.py makemigrations
 python manage.py migrate
-
+```
 ### 6. Créer un super utilisateur
 python manage.py createsuperuser
 
@@ -54,11 +55,12 @@ L'API utilise JWT pour sécuriser les routes.
 POST /api/token/
 
 Body :
-
+```bash
 {
     "username": "admin",
     "password": "password"
 }
+```
 
 ## Rafraîchir le token
 POST /api/token/refresh/
@@ -66,20 +68,24 @@ POST /api/token/refresh/
 ## Endpoints de l'API
 
 ## Produits
+```bash
 GET /api/products/
 POST /api/products/
 GET /api/products/{id}/
 PUT /api/products/{id}/
 DELETE /api/products/{id}/
 POST /api/products/{id}/move/
+```
 
 ## Entrepôts
+```bash
 GET /api/warehouses/
 POST /api/warehouses/
 GET /api/warehouses/{id}/
 PUT /api/warehouses/{id}/
 DELETE /api/warehouses/{id}/
 GET /api/warehouses/{id}/audit/
+```
 
 ## Règles métier
 Un produit périmé ne peut pas être منتقلé vers un autre entrepôt
