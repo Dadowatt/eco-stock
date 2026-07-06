@@ -29,17 +29,17 @@ class WarehouseViewSet(ModelViewSet):
 
 
 class ProductViewSet(ModelViewSet):
-    queryset = Product.objects.all()
+    queryset = Product.objects.select_related("warehouse")
     serializer_class = ProductSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     @action(detail=True, methods=["post"])
     def move(self, request, pk=None):
         product = self.get_object()
-        new_warehouse_id = request.data.get("warehouse")
+        new_warehouse_id = request.data.get("warehouse_id")
         if not new_warehouse_id:
             return Response(
-                {"error": "Le champ 'warehouse' est requis."},
+                {"error": "Le champ 'warehouse_id' est requis."},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
@@ -56,10 +56,11 @@ class ProductViewSet(ModelViewSet):
             )
         product.warehouse = new_warehouse
         product.save()
+        serializer = self.get_serializer(product)
         return Response(
             {
                 "message": "Produit déplacé avec succès.",
-                "warehouse": product.warehouse.id,
+                "product": serializer.data,
             },
             status=status.HTTP_200_OK,
         )
