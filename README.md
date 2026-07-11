@@ -1,118 +1,338 @@
 # Eco-Stock API
 
-## Présentation du projet
+API REST développée avec **Django REST Framework** permettant la gestion d'un système de stockage alimentaire.
 
-Eco-Stock est une API REST développée avec Django REST Framework. Elle permet de gérer un système de stock alimentaire entre plusieurs entrepôts dans le cadre d'une plateforme de redistribution de produits alimentaires proches de leur date de péremption.
+Cette API centralise la gestion des entrepôts et des produits, avec des règles métier liées au transfert des stocks, un système d'authentification JWT et une architecture basée sur les `ModelViewSet`.
 
-L'objectif de cette API est de centraliser la gestion des produits, de suivre leur état, de gérer leur localisation dans différents entrepôts et d'assurer des opérations métier comme le transfert de produits et l'audit des stocks.
+---
 
-## Fonctionnalités
+# Présentation du projet
 
-- Gestion des entrepôts (Warehouse)
-- Gestion des produits (Product)
-- Suivi du statut des produits (disponible, réservé, périmé)
-- Transfert de produits entre entrepôts
-- Audit des entrepôts (nombre total de produits)
-- API sécurisée avec authentification JWT
+Eco-Stock est une plateforme destinée à faciliter la gestion des surplus alimentaires provenant des commerces locaux afin de permettre leur redistribution avant péremption.
 
-## Installation du projet
+L'API permet de gérer :
 
-### 1. Cloner le projet
+- les entrepôts de stockage ;
+- les produits alimentaires ;
+- les relations entre produits et entrepôts ;
+- les opérations métier liées au déplacement des stocks ;
+- la sécurisation des accès aux données.
 
-```bash
-git clone <url_du_repo>
-cd eco-stock
+---
 
-```
-### 2. Créer un environnement virtuel
-python -m venv .venv
+# Fonctionnalités
 
-### 3. Activer l'environnement
+## Gestion des entrepôts
 
-Sous Windows :
+- Création d'un entrepôt.
+- Consultation des entrepôts.
+- Modification d'un entrepôt.
+- Suppression d'un entrepôt.
+- Audit du nombre de produits présents dans un entrepôt.
 
-.venv\Scripts\activate
-### 4. Installer les dépendances
-pip install -r requirements.txt
+## Gestion des produits
 
-### 5. Appliquer les migrations
-```bash
-python manage.py makemigrations
-python manage.py migrate
-```
-### 6. Créer un super utilisateur
-python manage.py createsuperuser
-
-### 7. Lancer le serveur
-python manage.py runserver
-
-
-## Authentification JWT
-
-L'API utilise JWT pour sécuriser les routes.
-
-## Obtenir un token
-POST /api/token/
-
-Body :
-```bash
-{
-    "username": "admin",
-    "password": "password"
-}
-```
-
-## Rafraîchir le token
-POST /api/token/refresh/
-
-## Endpoints de l'API
-
-## Produits
-```bash
-GET /api/products/
-POST /api/products/
-GET /api/products/{id}/
-PUT /api/products/{id}/
-DELETE /api/products/{id}/
-POST /api/products/{id}/move/
-```
-
-## Entrepôts
-```bash
-GET /api/warehouses/
-POST /api/warehouses/
-GET /api/warehouses/{id}/
-PUT /api/warehouses/{id}/
-DELETE /api/warehouses/{id}/
-GET /api/warehouses/{id}/audit/
-```
-
-## Règles métier
-Un produit périmé ne peut pas être منتقلé vers un autre entrepôt
-L’audit d’un entrepôt retourne le nombre total de produits associés
-Seuls les utilisateurs authentifiés peuvent modifier les données (création, modification, suppression)
+- Création d'un produit.
+- Consultation des produits.
+- Modification d'un produit.
+- Suppression d'un produit.
+- Association d'un produit à un entrepôt.
+- Déplacement d'un produit vers un autre entrepôt.
 
 ## Sécurité
 
-L’API est sécurisée via JWT (JSON Web Token). Les utilisateurs doivent s’authentifier pour obtenir un token, qui doit ensuite être envoyé dans l’en-tête Authorization pour accéder aux routes protégées.
+- Authentification JWT avec Simple JWT.
+- Protection des opérations sensibles avec les permissions DRF.
+- Gestion des tokens d'accès et de rafraîchissement.
 
-Format :
+---
 
-Authorization: Bearer <access_token>
+# Technologies utilisées
 
-## Technologies utilisées
 - Python
-- Django
+- Django 6
 - Django REST Framework
 - Simple JWT
-- SQLite (ou autre base configurée)
+- SQLite
+- CORS Headers
+- Postman / Insomnia
+- Git
 
+---
 
-## Optimisations apportées
+# Architecture du projet
 
-En complément des fonctionnalités demandées dans le brief, plusieurs bonnes pratiques ont été mises en place :
+```
+eco-stock-api/
+│
+├── config/
+│   ├── settings.py
+│   ├── urls.py
+│   └── ...
+│
+├── inventory/
+│   ├── models.py
+│   ├── serializers.py
+│   ├── views.py
+│   ├── urls.py
+│   └── admin.py
+│
+├── manage.py
+├── requirements.txt
+└── README.md
+```
 
-- Utilisation de `select_related("warehouse")` afin d'optimiser les requêtes SQL lors de la récupération des produits.
-- Utilisation de serializers imbriqués (Nested Serializers) pour retourner les informations complètes de l'entrepôt.
-- Séparation des champs de lecture (`warehouse`) et d'écriture (`warehouse_id`) pour une API plus claire et plus simple à consommer.
-- Protection des routes sensibles grâce aux permissions `IsAuthenticatedOrReadOnly`.
+---
+
+# Organisation du code
+
+## Models
+
+Les modèles représentent les entités principales du système.
+
+### Warehouse
+
+```text
+id
+name
+location
+capacity
+```
+
+### Product
+
+```text
+id
+name
+quantity
+expiration_date
+status
+warehouse
+```
+
+Relation :
+
+```
+Warehouse (1) --------< (N) Product
+```
+
+Un entrepôt peut contenir plusieurs produits.
+
+---
+
+# Logique métier
+
+## Déplacement d'un produit
+
+Endpoint :
+
+```
+POST /api/products/{id}/move/
+```
+
+Permet de transférer un produit vers un autre entrepôt.
+
+Validation appliquée :
+
+- l'entrepôt de destination doit exister ;
+- le champ `warehouse_id` est obligatoire ;
+- un produit périmé ne peut pas être déplacé.
+
+Exemple :
+
+```json
+{
+    "warehouse_id": 2
+}
+```
+
+Réponse :
+
+```json
+{
+    "message": "Produit déplacé avec succès."
+}
+```
+
+---
+
+## Audit d'un entrepôt
+
+Endpoint :
+
+```
+GET /api/warehouses/{id}/audit/
+```
+
+Retourne le nombre total de produits associés à un entrepôt.
+
+Exemple :
+
+```json
+{
+    "warehouse": "Entrepôt Paris",
+    "total_products": 15
+}
+```
+
+---
+
+# Authentification JWT
+
+L'API utilise **Simple JWT**.
+
+## Obtenir un token
+
+```
+POST /api/token/
+```
+
+Réponse :
+
+```json
+{
+    "access": "token_access",
+    "refresh": "token_refresh"
+}
+```
+
+## Rafraîchir un token
+
+```
+POST /api/token/refresh/
+```
+
+Les opérations de modification nécessitent une authentification valide.
+
+---
+
+# Documentation des endpoints
+
+## Authentication
+
+| Méthode | Endpoint | Description |
+|---|---|---|
+| POST | `/api/token/` | Obtenir un token JWT |
+| POST | `/api/token/refresh/` | Rafraîchir un token |
+
+---
+
+## Warehouses
+
+| Méthode | Endpoint | Description |
+|---|---|---|
+| GET | `/api/warehouses/` | Liste des entrepôts |
+| POST | `/api/warehouses/` | Créer un entrepôt |
+| GET | `/api/warehouses/{id}/` | Détail |
+| PUT | `/api/warehouses/{id}/` | Modifier |
+| DELETE | `/api/warehouses/{id}/` | Supprimer |
+| GET | `/api/warehouses/{id}/audit/` | Audit du stock |
+
+---
+
+## Products
+
+| Méthode | Endpoint | Description |
+|---|---|---|
+| GET | `/api/products/` | Liste des produits |
+| POST | `/api/products/` | Créer un produit |
+| GET | `/api/products/{id}/` | Détail |
+| PUT | `/api/products/{id}/` | Modifier |
+| DELETE | `/api/products/{id}/` | Supprimer |
+| POST | `/api/products/{id}/move/` | Déplacer un produit |
+
+---
+
+# Installation
+
+## Cloner le projet
+
+```bash
+git clone https://github.com/votre-utilisateur/eco-stock-api.git
+
+cd eco-stock-api
+```
+
+## Créer un environnement virtuel
+
+```bash
+python -m venv venv
+```
+
+Activation :
+
+Windows :
+
+```bash
+venv\Scripts\activate
+```
+
+Linux / macOS :
+
+```bash
+source venv/bin/activate
+```
+
+---
+
+## Installer les dépendances
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+## Appliquer les migrations
+
+```bash
+python manage.py migrate
+```
+
+---
+
+## Créer un utilisateur administrateur
+
+```bash
+python manage.py createsuperuser
+```
+
+---
+
+## Lancer le serveur
+
+```bash
+python manage.py runserver
+```
+
+L'API sera disponible sur :
+
+```
+http://127.0.0.1:8000/
+```
+
+---
+
+# Connexion avec le frontend
+
+L'API autorise les requêtes provenant des applications frontend configurées via CORS.
+
+Frontend Angular :
+
+```
+http://localhost:4200
+```
+
+---
+
+# Auteur
+
+**Dado Watt**
+
+Projet réalisé dans le cadre d'un développement Full Stack.
+
+Backend :
+- Django REST Framework
+
+Frontend associé :
+- Angular
